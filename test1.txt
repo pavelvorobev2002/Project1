@@ -1,2 +1,81 @@
 Воробьёв Павел
 
+
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        // Исходные сообщения и соответствующие коды
+        string[] messages = { "A", "B", "C", "D", "E", "F", "F", "H" };
+        string[] codes = { "000", "001", "010", "011", "100", "101", "110", "111" };
+
+        // Создание кодировщика и декодировщика
+        Dictionary<string, string> encoder = CreateEncoder(messages, codes);
+        Dictionary<string, string> decoder = CreateDecoder(encoder);
+
+        // Кодирование сообщений с добавлением бита четности
+        foreach (var message in messages)
+        {
+            string code = encoder[message];
+            string codeWithParity = AddParityBit(code);
+            Console.WriteLine($"Сообщение: {message}, Код: {codeWithParity}");
+        }
+
+        // Декодирование кодов с проверкой бита четности
+        foreach (var code in codes)
+        {
+            string codeWithParity = AddParityBit(code);
+            string decodedMessage = decoder.TryGetValue(code, out string msg) ? msg : "Ошибка";
+            // Проверка бита четности
+            if (!CheckParityBit(codeWithParity))
+            {
+                decodedMessage = "Ошибка";
+            }
+            Console.WriteLine($"Код: {codeWithParity}, Сообщение: {decodedMessage}");
+        }
+    }
+
+    // Создание кодировщика
+    static Dictionary<string, string> CreateEncoder(string[] messages, string[] codes)
+    {
+        var encoder = new Dictionary<string, string>();
+        for (int i = 0; i < messages.Length; i++)
+        {
+            encoder[messages[i]] = codes[i];
+        }
+        return encoder;
+    }
+
+    // Создание декодировщика
+    static Dictionary<string, string> CreateDecoder(Dictionary<string, string> encoder)
+    {
+        var decoder = new Dictionary<string, string>();
+        foreach (var pair in encoder)
+        {
+            decoder[pair.Value] = pair.Key;
+        }
+        return decoder;
+    }
+
+    // Добавление бита четности
+    static string AddParityBit(string code)
+    {
+        int onesCount = 0;
+        foreach (char bit in code)
+        {
+            if (bit == '1') onesCount++;
+        }
+        return code + (onesCount % 2 == 0 ? "0" : "1");
+    }
+
+    // Проверка бита четности
+    static bool CheckParityBit(string codeWithParity)
+    {
+        string code = codeWithParity.Substring(0, codeWithParity.Length - 1);
+        char parityBit = codeWithParity[codeWithParity.Length - 1];
+        return (AddParityBit(code)[code.Length] == parityBit);
+    }
+}
